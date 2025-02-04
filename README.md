@@ -1,2 +1,2 @@
 # DeskAgent
-Simpel desktop tasks via natural language prompts.
+Simple desktop tasks via natural language prompts.
