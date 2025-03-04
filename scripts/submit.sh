@@ -9,7 +9,7 @@
 #SBATCH --output=log/train_%j.out
 #SBATCH --error=logs/train_%j.err
 
-module load python/3.10.4
+module load python/3.11.11
 module load cuda
 module load pytorch
 
