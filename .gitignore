@@ -171,5 +171,9 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
+# MacOS system files
+.DS_Store
+
 # Data (too large for git)
-data/ 
+data/
+
