@@ -1,4 +1,4 @@
-from utils import *
+from helpers import *
 
 # Global constants
 ZIP_PATH = "/content/isic-2024-challenge.zip" # Zip file path
