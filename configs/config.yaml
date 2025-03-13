@@ -1,0 +1,38 @@
+expirement_name: "detection_baseline"
+seed: 42
+
+data:
+  annotations_file: ""
+  images_dir: ""
+  img_size: 
+  batch_size:
+  num_workers:
+  val_size:
+  file_ext:
+
+model_architecture:
+  model_name: "resnet50"
+  pretrained: true
+  freeze_backbone: false
+  num_classes:
+  dropout: 0.3
+
+training:
+  epochs:
+  learning_rate:
+  weight_decay:
+  lr_scheduler:
+    factor:
+    patience:
+  early_stopping:
+    patience:
+    min_delta:
+  
+  paths:
+    checkpoint_dir: ""
+    log_dir: ""
+
+  hpc:
+    distributed: true
+    mixed_precision: true
+    gradient_accumulation_step: 1

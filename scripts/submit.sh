@@ -1,22 +1,28 @@
 #!/bin/bash
-#SBATCH --job-name=
-#SBATCH --account=
-#SBATCH --partition=
+#SBATCH --job-name=islic-training
+#SBATCH --partition=gpu
 #SBATCH --gres=gpu:1
-#SBATCH --cpus-per-task=
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=4
 #SBATCH --mem=32G
-#SBATCH --time==24:00:00
-#SBATCH --output=log/train_%j.out
-#SBATCH --error=logs/train_%j.err
+#SBATCH --time=12:00:00
+#SBATCH --account=petep
+#SBATCH --mail-user=petep@umich.edu
+#SBATCH --mail-type=BEGIN,END,FAIL
+#SBATCH --output=%x-%j.log
 
-module load python/3.11.11
-module load cuda
-module load pytorch
+# Load modules
+module load cuda/11.7
+module load cudnn
 
-source ~/anaconda3/bin/activate env
+# Initialize conda
+source /sw/arcts/centos7/anaconda3/2023.03/etc/profile.d/conda.sh
 
-cd ~/ICIS-Cancer-Detection 
+conda activate isic_env
 
-python src/train.py --config config.yml --epochs 50 --batch-size 32 --learning-rate 0.001
+export PYTHONPATH=$PYTHONPATH:/home/petep/ISIC-Cancer-Detection
 
-conda deactivate
+cd /home/petep/ISIC-Cancer-Detection
+
+python main.py --config configs/config.yaml
