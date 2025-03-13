@@ -1,38 +1,30 @@
-expirement_name: "detection_baseline"
-seed: 42
-
 data:
-  annotations_file: ""
-  images_dir: ""
-  img_size: 
-  batch_size:
-  num_workers:
-  val_size:
-  file_ext:
+  annotations_file: "data/isic-2024-challenge/train-metadata.csv"
+  img_dir: "data/isic-2024-challenge/train-image/image"
+  img_size: [224, 224]
+  batch_size: 32
+  num_workers: 4
+  val_split: 0.2
+  file_ext: ".jpg"
 
-model_architecture:
-  model_name: "resnet50"
+model:
+  architecture: "resnet50"
   pretrained: true
   freeze_backbone: false
-  num_classes:
-  dropout: 0.3
+  num_classes: 7
+  dropout_rate: 0.3
 
 training:
-  epochs:
-  learning_rate:
-  weight_decay:
+  epochs: 20
+  learning_rate: 0.001
+  weight_decay: 0.00001
   lr_scheduler:
-    factor:
-    patience:
+    factor: 0.1
+    patience: 5
   early_stopping:
-    patience:
-    min_delta:
-  
-  paths:
-    checkpoint_dir: ""
-    log_dir: ""
+    patience: 10
+    min_delta: 0.001
 
-  hpc:
-    distributed: true
-    mixed_precision: true
-    gradient_accumulation_step: 1
+paths:
+  checkpoint_dir: "checkpoints/"
+  log_dir: "logs/"
