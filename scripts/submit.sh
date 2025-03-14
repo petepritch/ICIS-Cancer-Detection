@@ -1,6 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=isic-training
-#SBATCH --partition=gpu
+#SBATCH --partition=spgpu
+#SBATCH --account=eecs545w25_class
 #SBATCH --gres=gpu:1
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=4
@@ -11,12 +12,12 @@
 #SBATCH --output=%x-%j.log
 
 # Load modules
-module python3.9.12
+module load python/3.9.12
 module load cuda/11.6.2
 module load cudnn
 
 # Initialize conda
-source /home/petep/isic/bin/activate
+source /home/petep/ICIS-Cancer-Detection/isic_env/bin/activate
 
 export PYTHONPATH=$PYTHONPATH:/home/petep/ICIS-Cancer-Detection
 
@@ -24,4 +25,6 @@ cd /home/petep/ICIS-Cancer-Detection
 
 python src/main.py --config configs/config.yaml
 
-deactivate
+if [ -f "/home/petep/ICIS-Cancer-Detection/isic_env/bin/deactivate" ]; then 
+	source /home/petep/ICIS-Cancer-Detection/isic_env/bin/deactivate
+fi
