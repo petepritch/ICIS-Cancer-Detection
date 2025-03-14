@@ -2,7 +2,7 @@ data:
   annotations_file: "data/isic-2024-challenge/train-metadata.csv"
   img_dir: "data/isic-2024-challenge/train-image/image"
   img_size: [224, 224]
-  batch_size: 32
+  batch_size: 64
   num_workers: 4
   val_split: 0.2
   file_ext: ".jpg"
@@ -28,3 +28,7 @@ training:
 paths:
   checkpoint_dir: "checkpoints/"
   log_dir: "logs/"
+
+hpc:
+  gradient_accumulation_steps: 1
+  mixed_precision: true

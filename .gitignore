@@ -137,7 +137,7 @@ env.bak/
 venv.bak/
 DAenv/
 icis_env/
-
+isic_env/
 # Spyder project settings
 .spyderproject
 .spyproject

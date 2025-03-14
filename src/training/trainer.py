@@ -10,7 +10,7 @@ from utils.checkpointing import save_checkpoint
 
 class Trainer:
 
-    def __init__(self, model, train_loader, val_loader, config):
+    def __init__(self, model, train_loader, val_loader, config, device=None):
         """Initialize the trainer."""
         self.model = model
         self.train_loader = train_loader
@@ -19,6 +19,15 @@ class Trainer:
 
         # Use Cuda if available
         self.device = torch.device("cude" if torch.cuda.is_available() else "cpu")
+        
+        # Great Lakes settings
+        hpc_config = config.get('hpc', {})
+        self.grad_accum_steps = hpc_config.get('gradient_accumulation_steps', 1)
+        self.use_mixed_precision = hpc_config.get('mixed_precision', False)
+        
+        #Mixed precision
+        self.scaler = torch.cuda.amp.GradScaler() if self.use_mixed_precision else None
+
         self.model.to(self.device)
 
         # Optimizer
@@ -56,20 +65,39 @@ class Trainer:
         self.model.train()
         epoch_loss= 0.0
 
-        for images, labels in self.train_loader:
+        for i, (images, labels) in enumerate(self.train_loader):
             images, labels = images.to(self.device), labels.to(self.device)
+            batch_size = images.size(0)
 
-            self.optimizer.zero_grad()
+            if i % self.grad_accum_steps == 0:
+                self.optimizer.zero_grad()
 
-            # Foward pass
-            outputs = self.model(images)
-            loss = self.criterion(outputs, labels)
+            # Mixed precision training
+            if self.use_mixed_precision:
+                with torch.cuda.amp.autocast():
+                    outputs = self.model(images)
+                    loss = self.criterion(outputs, labels)
+                    loss = loss / self.grad_accum_steps
 
-            # Backward pas
-            loss.backward()
-            self.optimizer.step()
+                self.scaler.scale(loss).backward()
 
-            epoch_loss += loss.item() * images.size(0)
+                if (i + 1) % self.grad_accum_steps == 0 or (i + 1 == len(self.train_loader)):
+                    self.scaler.step(self.optimizer)
+                    self.scaler.update()
+
+            else: 
+                # Standard training
+                outputs = self.model(images)
+                loss = self.criterion(outputs, labels)
+                loss = loss / self.grad_accum_steps
+
+                loss.backward()
+
+                if (i + 1) % self.grad_accum_steps == 0 or (i + 1 == len(self.train_loader)):
+                    self.optimize.step()
+
+            full_loss = loss.item() * self.grad_accum_steps
+            epoch_loss += full_loss * batch_size
 
         return epoch_loss / len(self.train_loader.dataset)
     
