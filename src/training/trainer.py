@@ -3,10 +3,10 @@ import time
 import numpy as np
 import torch
 from torch.optim import Adam
-from torch.optim.lr_scheduler import ReduceLRonPlateau
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.nn import CrossEntropyLoss
-from ..utils.metrics import calculate_metrics
-from ..utils.checkpointing import save_checkpoint
+from utils.metrics import calculate_metrics
+from utils.checkpointing import save_checkpoint
 
 class Trainer:
 
@@ -31,7 +31,7 @@ class Trainer:
         self.criterion = CrossEntropyLoss()
 
         # Scheduler
-        self.scheduler = ReduceLRonPlateau(
+        self.scheduler = ReduceLROnPlateau(
             self.optimizer,
             mode='min',
             factor=config['training']['lr_scheduler']['factor'],

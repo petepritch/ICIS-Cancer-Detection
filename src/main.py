@@ -38,7 +38,7 @@ def main(config_path):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="ISIC Skin Cancer Detection Training")
-    parser.add_argument("--config", type=str, default="config/config.yaml", 
+    parser.add_argument("--config", type=str, default="configs/config.yaml", 
                         help="Path to configuration file")
     args = parser.parse_args()
     
