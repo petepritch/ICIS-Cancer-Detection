@@ -1,0 +1,99 @@
+First make sure you have the cisco secure client vpn installed if you're not
+on a campus network, otherwise ssh commands will time out. Check out this page:
+
+https://its.umich.edu/enterprise/wifi-networks/vpn/getting-started
+
+I used scp to transfer the .zip file containing the challenge data, with the 
+~ 2 GB file it took maybe 5-10 minutes
+
+scp /path/to/your/local/icis-2024-challenge.zip <uniqname>@greatlakes.arc-ts.umich.edu:/home/<uniqname>/
+
+You can use 'unzip' later to unpack this wherever you prefer. Next you'll need to
+ssh onto the cluster and and install miniconda:
+
+ssh <uniqname>@greatlakes.arc-ts.umich.edu
+
+should land you in /home/<uniqname> after login. Once here you can clone into your 
+branch of the repo, you may need to run 'git init' first. 
+
+To unzip the challenge data, I did
+
+mkdir icis-2024-challenge
+unzip icis-2024-challenge.zip -d icis-2024-challenge
+
+To install and manage the python packages we'll want, the easiest way is to install
+our own miniconda environment. I followed the instructions at:
+
+https://github.com/um-dang/conda_on_the_cluster/blob/master/README.md
+
+In summary, do:
+
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+bash Miniconda3-latest-Linux-x86_64.sh
+
+Follow the prompts on the installer. Make sure you allow it to modify your .bashrc
+Next:
+
+source ~/miniconda3/bin/activate 
+
+Then we'll need to modify the .bashrc file. I never got on the vi bandwagon so 
+I like to use nano:
+
+nano ~/.bashrc
+
+The link above will show you a series of lines you'll need to comment out in 
+your .bashrc. If you're unfamiliar with nano, to write out the changes do
+" ctrl + x " and then " y " to save the changes.
+
+To apply the changes we made to the .bashrc run:
+
+source ~/.bash_profile
+
+I've stored the environment dependencies I found to work in the 'keras_env.yml' file.
+You can make your own conda environment from this using:
+
+conda env create -f keras_env.yml
+
+Hopefully this will create the environment without issue, but if it fails you can also do:
+
+conda create --name keras_env nb_conda numpy=1.23.5 matplotlib pandas h5py scikit-learn ipython keras=3.5.0 tensorflow pytorch imbalanced-learn opencv google-colab plotly xgboost lightgbm catboost tqdm
+
+Which will definitely run, but slower because it will have to solve the environment again.
+
+After this is finished, run:
+
+conda activate keras_env
+hash -r 
+python -m ipykernel install --user --name=keras_env
+
+And that's pretty much it. If you want to run a job in jupyterlab, you can
+navigate in your browser to greatlakes.arc-ts.umich.edu. In the top banner
+there's a drop-down for 'Interactive Apps' and you can follow it and 
+select 'JupyterLab' in the side panel. To run the sample notebook I ran, 
+you can use:
+'python3.11-anaconda/2024.02' distribution
+'standard' partition
+4 hours
+16 cores
+16 GB memory
+
+and leave the other fields blank. Hit 'launch' and the next screen will 
+prompt you to the notebook once the job has started. The last important
+step, once you've selected a notebook to run, is to change to the correct 
+environment using:
+
+"kernel-> change kernel -> keras_env"  
+
+From the top banner. 
+
+I haven't tried submitting shell scripts with this environment yet, but I
+think you should be able to add:
+
+source ~/miniconda3/bin/activate
+conda activate keras_env
+
+To the beginning of your shell script for everything to play nice. 
+
+One important caveat is that I haven't checked that the installed packages 
+are installed with gpu compatibility, and they may require extra steps to
+enable these features. Let me know if anything breaks!
