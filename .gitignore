@@ -136,7 +136,8 @@ ENV/
 env.bak/
 venv.bak/
 DAenv/
-
+icis_env/
+isic_env/
 # Spyder project settings
 .spyderproject
 .spyproject
@@ -171,5 +172,9 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
+# MacOS system files
+.DS_Store
+
 # Data (too large for git)
-data/ 
+data/
+

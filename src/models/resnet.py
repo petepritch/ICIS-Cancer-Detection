@@ -9,7 +9,7 @@ class ISICResNet(nn.Module):
         """
         super(ISICResNet, self).__init__()
 
-        arch = config['model']['arch']
+        arch = config['model']['architecture']
         pretrained = config['model']['pretrained']
         num_classes = config['model']['num_classes']
         freeze_backbone = config['model']['freeze_backbone']
@@ -36,5 +36,5 @@ class ISICResNet(nn.Module):
             nn.Linear(in_features, num_classes)
         )
 
-def forward(self, x):
-    return self.resnet(x)
+    def forward(self, x):
+        return self.resnet(x)

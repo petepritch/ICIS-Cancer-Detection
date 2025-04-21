@@ -5,32 +5,41 @@ import torch
 from torch.optim import Adam
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.nn import CrossEntropyLoss
-from ..utils.metrics import calculate_metrics
-from ..utils.checkpointing import save_checkpoint
+from utils.metrics import calculate_metrics
+from utils.checkpointing import save_checkpoint
 
 class Trainer:
-    def __init__(self, model, train_loader, val_loader, config):
+
+    def __init__(self, model, train_loader, val_loader, config, device=None):
         """Initialize the trainer."""
         self.model = model
         self.train_loader = train_loader
         self.val_loader = val_loader
         self.config = config
+
+        # Use Cuda if available
+        self.device = torch.device("cude" if torch.cuda.is_available() else "cpu")
         
-        # Set device
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        # Great Lakes settings
+        hpc_config = config.get('hpc', {})
+        self.grad_accum_steps = hpc_config.get('gradient_accumulation_steps', 1)
+        self.use_mixed_precision = hpc_config.get('mixed_precision', False)
+        
+        #Mixed precision
+        self.scaler = torch.cuda.amp.GradScaler() if self.use_mixed_precision else None
+
         self.model.to(self.device)
-        
-        # Set up optimizer
+
+        # Optimizer
         self.optimizer = Adam(
             self.model.parameters(),
             lr=config['training']['learning_rate'],
             weight_decay=config['training']['weight_decay']
         )
-        
-        # Set up loss function
+
         self.criterion = CrossEntropyLoss()
-        
-        # Set up learning rate scheduler
+
+        # Scheduler
         self.scheduler = ReduceLROnPlateau(
             self.optimizer,
             mode='min',
@@ -38,8 +47,7 @@ class Trainer:
             patience=config['training']['lr_scheduler']['patience'],
             verbose=True
         )
-        
-        # Training history
+
         self.history = {
             'train_loss': [],
             'val_loss': [],
@@ -48,100 +56,111 @@ class Trainer:
             'val_recall': [],
             'val_f1': []
         }
-        
-        # For early stopping
+
         self.best_val_loss = float('inf')
         self.patience_counter = 0
-        
+
     def train_epoch(self):
-        """Train for one epoch."""
+        """Single epoch loop."""
         self.model.train()
-        epoch_loss = 0.0
-        
-        for images, labels in self.train_loader:
+        epoch_loss= 0.0
+
+        for i, (images, labels) in enumerate(self.train_loader):
             images, labels = images.to(self.device), labels.to(self.device)
-            
-            # Zero the gradients
-            self.optimizer.zero_grad()
-            
-            # Forward pass
-            outputs = self.model(images)
-            loss = self.criterion(outputs, labels)
-            
-            # Backward pass and optimize
-            loss.backward()
-            self.optimizer.step()
-            
-            epoch_loss += loss.item() * images.size(0)
-        
+            batch_size = images.size(0)
+
+            if i % self.grad_accum_steps == 0:
+                self.optimizer.zero_grad()
+
+            # Mixed precision training
+            if self.use_mixed_precision:
+                with torch.cuda.amp.autocast():
+                    outputs = self.model(images)
+                    loss = self.criterion(outputs, labels)
+                    loss = loss / self.grad_accum_steps
+
+                self.scaler.scale(loss).backward()
+
+                if (i + 1) % self.grad_accum_steps == 0 or (i + 1 == len(self.train_loader)):
+                    self.scaler.step(self.optimizer)
+                    self.scaler.update()
+
+            else: 
+                # Standard training
+                outputs = self.model(images)
+                loss = self.criterion(outputs, labels)
+                loss = loss / self.grad_accum_steps
+
+                loss.backward()
+
+                if (i + 1) % self.grad_accum_steps == 0 or (i + 1 == len(self.train_loader)):
+                    self.optimize.step()
+
+            full_loss = loss.item() * self.grad_accum_steps
+            epoch_loss += full_loss * batch_size
+
         return epoch_loss / len(self.train_loader.dataset)
     
     def validate(self):
-        """Validate the model."""
+        """Validate model."""
         self.model.eval()
         val_loss = 0.0
         all_labels = []
         all_predictions = []
-        
+
         with torch.no_grad():
             for images, labels in self.val_loader:
                 images, labels = images.to(self.device), labels.to(self.device)
-                
-                # Forward pass
+
+                # Foward pass
                 outputs = self.model(images)
                 loss = self.criterion(outputs, labels)
-                
-                # Calculate validation metrics
+
                 val_loss += loss.item() * images.size(0)
                 _, predictions = torch.max(outputs, 1)
-                
-                # Store for metrics calculation
+
                 all_labels.extend(labels.cpu().numpy())
                 all_predictions.extend(predictions.cpu().numpy())
-        
-        # Calculate metrics
+
         metrics = calculate_metrics(np.array(all_labels), np.array(all_predictions))
         metrics['loss'] = val_loss / len(self.val_loader.dataset)
-        
+
         return metrics
     
     def train(self):
-        """Train the model for specified number of epochs."""
+        """Train for specifed number of epochs."""
         print(f"Training on device: {self.device}")
-        
+
         for epoch in range(self.config['training']['epochs']):
             start_time = time.time()
-            
-            # Training phase
+
             train_loss = self.train_epoch()
             self.history['train_loss'].append(train_loss)
-            
-            # Validation phase
+
             metrics = self.validate()
             val_loss = metrics['loss']
-            
-            # Store metrics in history
+
             self.history['val_loss'].append(val_loss)
             self.history['val_accuracy'].append(metrics['accuracy'])
             self.history['val_precision'].append(metrics['precision'])
             self.history['val_recall'].append(metrics['recall'])
             self.history['val_f1'].append(metrics['f1'])
-            
+
             # Update learning rate scheduler
             self.scheduler.step(val_loss)
-            
+
             # Early stopping check
             if val_loss < self.best_val_loss - self.config['training']['early_stopping']['min_delta']:
                 self.best_val_loss = val_loss
                 self.patience_counter = 0
-                
-                # Save the best model
+
                 save_checkpoint({
                     'epoch': epoch + 1,
                     'state_dict': self.model.state_dict(),
                     'best_val_loss': self.best_val_loss,
                     'optimizer': self.optimizer.state_dict(),
                 }, is_best=True, checkpoint_dir=self.config['paths']['checkpoint_dir'])
+            
             else:
                 self.patience_counter += 1
                 
@@ -154,18 +173,17 @@ class Trainer:
                         'optimizer': self.optimizer.state_dict(),
                     }, is_best=False, checkpoint_dir=self.config['paths']['checkpoint_dir'])
             
-            # Print epoch results
+
             epoch_time = time.time() - start_time
             print(f"Epoch {epoch+1}/{self.config['training']['epochs']} - "
-                  f"Time: {epoch_time:.2f}s - "
-                  f"Train Loss: {train_loss:.4f} - "
-                  f"Val Loss: {val_loss:.4f} - "
-                  f"Val Acc: {metrics['accuracy']:.4f} - "
-                  f"Val F1: {metrics['f1']:.4f}")
+                f"Time: {epoch_time:.2f}s - "
+                f"Train Loss: {train_loss:.4f} - "
+                f"Val Loss: {val_loss:.4f} - "
+                f"Val Acc: {metrics['accuracy']:.4f} - "
+                f"Val F1: {metrics['f1']:.4f}")
             
-            # Early stopping
             if self.patience_counter >= self.config['training']['early_stopping']['patience']:
-                print(f"Early stopping triggered after {epoch+1} epochs")
+                print(f"Early stopping triggered after {epoch+1} epochs.")
                 break
-        
+    
         return self.history
