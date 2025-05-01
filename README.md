@@ -1,6 +1,6 @@
 # Multimodel Transformer Framework for Skin Cancer Detection
 
-![Model Architecture](assets/model_architecture.pdf)
+![Model Architecture](assets/model_architecture_cropped.png)
 
 A novel multimodal approach to skin cancer detection that combines image data and patient metadata from the SLICE-3D dataset, addressing extreme class imbalance through innovative techniques.
 
