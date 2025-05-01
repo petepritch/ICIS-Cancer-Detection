@@ -1,0 +1,9 @@
+model:
+  architecture: "resnetv2_50x1_bitm"  # Alternative options: efficientnet_b3, vit_small_patch16_224
+  pretrained: true
+  num_classes: 1
+
+image:
+  size: 224
+  mean: [0.485, 0.456, 0.406]  # ImageNet normalization 
+  std: [0.229, 0.224, 0.225]

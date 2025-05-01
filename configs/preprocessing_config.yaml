@@ -1,0 +1,24 @@
+data:
+  img_dir: "data/train-image/image"
+  csv_file: "data/metadata_preprocessed.csv"
+  
+augmentation:
+  enabled: true
+  transpose_prob: 0.5
+  flip_vertical_prob: 0.5
+  flip_horizontal_prob: 0.5
+  brightness_contrast_prob: 0.75
+  brightness_limit: 0.2
+  contrast_limit: 0.2
+  blur_prob: 0.7
+  distortion_prob: 0.7
+  clahe_prob: 0.7
+  hue_saturation_prob: 0.5
+  rotate_prob: 0.85
+  shift_limit: 0.1
+  scale_limit: 0.1
+  rotate_limit: 15
+  coarse_dropout_prob: 0.7
+  max_holes: 1
+  max_height_fraction: 0.375
+  max_width_fraction: 0.375

@@ -1,0 +1,21 @@
+training:
+  batch_size: 32
+  num_workers: 8
+  initial_learning_rate: 1e-4
+  weight_decay: 0.05
+  max_epochs: 20
+  patience_limit: 5
+  warmup_epochs: 2
+  
+scheduler:
+  type: "cosine"
+  T_max: 18  # max_epochs - warmup_epochs
+  eta_min: 1e-6
+  
+loss:
+  type: "bce_with_logits"
+  malignant_weight: 100
+  labeling_strategy: "standard"  # Alternative: "indeterminate_as_malignant"
+  
+sampling:
+  undersamplingweight: null  # Auto-calculated based on class distribution
