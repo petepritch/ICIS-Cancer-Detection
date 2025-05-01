@@ -1,5 +1,7 @@
 # Multimodel Transformer Framework for Skin Cancer Detection
 
+![Model Architecture](assets/model_architecture.png)
+
 A novel multimodal approach to skin cancer detection that combines image data and patient metadata from the SLICE-3D dataset, addressing extreme class imbalance through innovative techniques.
 
 ## Overview
@@ -38,7 +40,7 @@ We use the SLICE-3D dataset, which consists of 401,059 cropped 15mm x 15mm image
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/skincare-ai.git
+git clone https://github.com/petepritch/ICIS-Cancer-Detection.git
 cd skincare-ai
 
 # Create a virtual environment
