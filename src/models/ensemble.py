@@ -100,14 +100,9 @@ class ImageMetadataMutualAttentionModel(nn.Module):
         Returns:
             torch.Tensor: Output logits
         """
-        # Extract features
         image_features = self.image_encoder(image_batch)
         metadata_features = self.metadata_encoder(metadata_batch)
-
-        # Fuse features using attention
         fused_features = self.attention_block([image_features, metadata_features])
-
-        # Classify
         logits = self.classifier(fused_features)
 
         return logits
@@ -150,19 +145,10 @@ class FullEnsembleMutualAttentionModel(nn.Module):
         Returns:
             torch.Tensor: Output logits
         """
-        # Extract features from each image encoder
         image_features_list = [encoder(image_batch) for encoder in self.image_encoders]
-
-        # Extract metadata features
         metadata_features = self.metadata_encoder(metadata_batch)
-
-        # Combine all features for attention
         all_features = image_features_list + [metadata_features]
-
-        # Fuse features using attention
         fused_features = self.attention_block(all_features)
-
-        # Classify
         logits = self.classifier(fused_features)
 
         return logits

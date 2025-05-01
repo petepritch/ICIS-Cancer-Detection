@@ -57,7 +57,7 @@ We use the SLICE-3D dataset, which consists of 401,059 cropped 15mm x 15mm image
 - True Positive Rate (TPR) and False Positive Rate (FPR) analysis
 - Accuracy benchmarking against Kaggle competition entries
 
-## Project structure
+<!-- ## Project structure
 
 ```plaintext
 tumor_classification/
@@ -68,11 +68,7 @@ tumor_classification/
 │   ├── training_config.yaml      # Training parameters for vision models
 │   ├── lgbm_config.yaml          # LGBM training parameters
 │   └── greatlakes_paths.yaml     # HPC-specific paths
-├── data/                         # Symlink to scratch directory
-│   └── README.md                 # Instructions about data
 ├── embeddings/                   # Directory to store embedding CSVs
-├── models/                       # Trained models saved here
-│   └── plots/                    # Model evaluation plots
 ├── logs/                         # Log files saved here
 ├── scripts/
 │   ├── train_model.py            # Vision model training script
@@ -80,11 +76,11 @@ tumor_classification/
 │   ├── train_lgbm.py             # LGBM training script
 │   ├── setup_greatlakes.sh       # HPC environment setup script
 │   └── slurm/                    # SLURM job scripts
-│       ├── train_vision.slurm
-│       ├── vision_array.slurm
-│       ├── extract_embeddings.slurm
-│       ├── train_lgbm.slurm
-│       └── run_pipeline.slurm
+│       ├── train_vision.sh
+│       ├── vision_array.sh
+│       ├── extract_embeddings.sh
+│       ├── train_lgbm.sh
+│       └── run_pipeline.sh
 └── src/
     ├── __init__.py
     ├── preprocessing/
@@ -93,9 +89,9 @@ tumor_classification/
     ├── modeling/
     │   ├── __init__.py
     │   ├── image_model.py        # Core vision model and evaluation
-    │   ├── trainer.py            # Vision model training pipeline
-    │   ├── mutual_attention.py   # Mutual attention block implementation
-    │   └── lgbm_trainer.py       # LGBM model training pipeline
+    │   ├── attention.py          # Mutual attention block implementation
+    │   ├── lgbm_trainer.py       # LGBM model training pipeline
+    |   └── attention_trainer.py  # Mutual attention block training
     ├── synthetic/
     │   ├── __init__.py
     │   └── smote.py              # SMOTE implementation for data generation
@@ -105,7 +101,7 @@ tumor_classification/
         ├── embeddings.py         # Embedding extraction utilities
         ├── metrics.py            # Custom evaluation metrics (pAUC)
         └── slurm_utils.py        # HPC-specific utilities
-```
+``` -->
 
 ## Installation
 
