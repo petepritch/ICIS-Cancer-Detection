@@ -26,7 +26,7 @@ class Trainer:
         self.use_mixed_precision = hpc_config.get('mixed_precision', False)
         
         #Mixed precision
-        self.scaler = torch.cuda.amp.GradScaler() if self.use_mixed_precision else None
+        self.scaler = torch.amp.GradScaler() if self.use_mixed_precision else None
 
         self.model.to(self.device)
 
@@ -74,7 +74,7 @@ class Trainer:
 
             # Mixed precision training
             if self.use_mixed_precision:
-                with torch.cuda.amp.autocast():
+                with torch.amp.autocast():
                     outputs = self.model(images)
                     loss = self.criterion(outputs, labels)
                     loss = loss / self.grad_accum_steps
